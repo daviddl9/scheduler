@@ -1,0 +1,99 @@
+/* src/App.css */
+.app-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.controls-section {
+  margin-bottom: 2rem;
+}
+
+.volunteer-form div, .volunteer-list li {
+  margin-bottom: 1em;
+}
+
+.volunteer-form label {
+  display: block;
+  margin-bottom: 0.3em;
+}
+
+.months-checkbox-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.5em;
+  margin-top: 0.5em;
+}
+
+.month-checkbox-item {
+  display: flex;
+  align-items: center;
+}
+.month-checkbox-item input[type="checkbox"] {
+  margin-right: 0.5em;
+}
+
+.volunteer-list ul {
+  list-style: none;
+  padding: 0;
+}
+
+.volunteer-list li {
+  padding: 1em;
+  border: 1px solid #444;
+  border-radius: 4px;
+  margin-bottom: 0.5em;
+}
+
+.generate-roster-btn {
+  display: block;
+  width: 100%;
+  padding: 1em;
+  font-size: 1.2em;
+  margin-top: 1em;
+  background-color: #007bff;
+  color: white;
+}
+.generate-roster-btn:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
+
+
+.roster-display table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1em;
+}
+
+.roster-display th, .roster-display td {
+  border: 1px solid #444;
+  padding: 0.5em;
+  text-align: left;
+}
+
+.roster-display th {
+  background-color: #333;
+}
+
+.roster-month {
+  margin-bottom: 2em;
+}
+
+
+@media (prefers-color-scheme: light) {
+  .volunteer-list li {
+    border: 1px solid #ddd;
+  }
+  .roster-display th, .roster-display td {
+    border: 1px solid #ddd;
+  }
+  .roster-display th {
+    background-color: #e9ecef;
+  }
+}
