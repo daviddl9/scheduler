@@ -31,13 +31,15 @@ function RosterDisplay({ roster, volunteers }) {
           <table>
             <thead>
               <tr>
-                <th>Sunday Date</th>
+                {/* MODIFIED: More generic header */}
+                <th>Scheduled Date</th>
                 <th>Assigned Volunteer(s)</th>
               </tr>
             </thead>
             <tbody>
               {rosterByMonth[monthIndex].map(entry => (
                 <tr key={formatDate(entry.date)}>
+                  {/* formatDate now includes day of week */}
                   <td>{formatDate(entry.date)}</td>
                   <td>
                     {entry.assignedVolunteers.length > 0

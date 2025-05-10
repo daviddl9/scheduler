@@ -97,3 +97,41 @@ header {
     background-color: #e9ecef;
   }
 }
+
+.schedule-rule-config div {
+  margin-bottom: 1em;
+}
+
+.schedule-rule-config label {
+  display: block;
+  margin-bottom: 0.3em;
+}
+
+.occurrences-checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1em;
+  margin-top: 0.5em;
+}
+
+.occurrences-checkbox-group div {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5em; /* Reset margin for items within this group */
+}
+
+.occurrences-checkbox-group input[type="checkbox"] {
+  margin-right: 0.5em;
+}
+.schedule-rule-config small {
+    display: block;
+    margin-top: 0.5em;
+    font-size: 0.9em;
+    color: #aaa;
+}
+
+@media (prefers-color-scheme: light) {
+  .schedule-rule-config small {
+    color: #555;
+  }
+}
