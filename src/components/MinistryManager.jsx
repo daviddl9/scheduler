@@ -1,6 +1,19 @@
 // src/components/MinistryManager.jsx
 import { useState } from 'react';
 import { nanoid } from 'nanoid';
+import { 
+  TextField, 
+  Button, 
+  List, 
+  ListItem, 
+  ListItemText, 
+  ListItemSecondaryAction, 
+  IconButton, 
+  Box,
+  Typography,
+  Grid
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 function MinistryManager({ ministries, onAddMinistry, onDeleteMinistry }) {
   const [newMinistryName, setNewMinistryName] = useState('');
@@ -23,34 +36,63 @@ function MinistryManager({ ministries, onAddMinistry, onDeleteMinistry }) {
   return (
     <div className="ministry-manager card">
       <h3>Manage Ministries</h3>
-      <div className="add-ministry-form">
-        <input
-          type="text"
-          placeholder="New Ministry Name"
-          value={newMinistryName}
-          onChange={(e) => setNewMinistryName(e.target.value)}
-        />
-        <input
-          type="number"
-          placeholder="Min. Volunteers"
-          value={minVolunteers}
-          onChange={(e) => setMinVolunteers(e.target.value)}
-          min="1"
-        />
-        <button onClick={handleAdd}>Add Ministry</button>
-      </div>
-      <h4>Existing Ministries:</h4>
+      <Grid container spacing={2} className="add-ministry-form" alignItems="center">
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            label="New Ministry Name"
+            variant="outlined"
+            value={newMinistryName}
+            onChange={(e) => setNewMinistryName(e.target.value)}
+          />
+        </Grid>
+        <Grid item xs={6} sm={3}>
+          <TextField
+            fullWidth
+            type="number"
+            label="Min. Volunteers"
+            variant="outlined"
+            value={minVolunteers}
+            onChange={(e) => setMinVolunteers(e.target.value)}
+            inputProps={{ min: "1" }}
+          />
+        </Grid>
+        <Grid item xs={6} sm={3}>
+          <Button 
+            variant="contained" 
+            color="primary" 
+            onClick={handleAdd}
+            fullWidth
+          >
+            Add Ministry
+          </Button>
+        </Grid>
+      </Grid>
+      
+      <Typography variant="h6" sx={{ mt: 2 }}>Existing Ministries:</Typography>
       {ministries.length === 0 ? (
-        <p>No ministries defined yet.</p>
+        <Typography variant="body1">No ministries defined yet.</Typography>
       ) : (
-        <ul>
+        <List>
           {ministries.map(m => (
-            <li key={m.id}>
-              {m.name} (Min: {m.minVolunteers})
-              <button onClick={() => onDeleteMinistry(m.id)} style={{marginLeft: '10px', backgroundColor: '#dc3545'}}>Delete</button>
-            </li>
+            <ListItem key={m.id} divider>
+              <ListItemText 
+                primary={m.name} 
+                secondary={`Minimum Volunteers: ${m.minVolunteers}`} 
+              />
+              <ListItemSecondaryAction>
+                <IconButton 
+                  edge="end" 
+                  aria-label="delete" 
+                  onClick={() => onDeleteMinistry(m.id)}
+                  color="error"
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </ListItemSecondaryAction>
+            </ListItem>
           ))}
-        </ul>
+        </List>
       )}
     </div>
   );

@@ -53,15 +53,18 @@ header {
 .generate-roster-btn {
   display: block;
   width: 100%;
-  padding: 1em;
-  font-size: 1.2em;
-  margin-top: 1em;
-  background-color: #007bff;
+  padding: 10px 20px;
+  font-size: 16px;
+  margin-top: 1rem;
+  background-color: #4caf50;
   color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 .generate-roster-btn:hover {
-  background-color: #0056b3;
-  border-color: #0056b3;
+  background-color: #45a049;
+  border-color: #45a049;
 }
 
 
@@ -94,6 +97,11 @@ header {
   margin-bottom: 0.3em;
 }
 
+.schedule-rule-config .MuiFormControl-root {
+  width: 100%;
+  max-width: 300px;
+}
+
 .occurrences-checkbox-group {
   display: flex;
   flex-wrap: wrap;
@@ -110,6 +118,19 @@ header {
 .occurrences-checkbox-group input[type="checkbox"] {
   margin-right: 0.5em;
 }
+
+.occurrence-selection {
+  margin-top: 1rem;
+}
+
+.MuiFormHelperText-root {
+  margin-bottom: 0.5rem;
+}
+
+.MuiFormControlLabel-root {
+  margin-left: -9px;
+}
+
 .schedule-rule-config small {
     display: block;
     margin-top: 0.5em;
@@ -119,8 +140,8 @@ header {
 
 .period-config-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1em;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
 }
 
 .period-config-grid > div {

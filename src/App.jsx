@@ -1,7 +1,19 @@
 // src/App.jsx
 import { useState, useEffect } from 'react';
 import { nanoid } from 'nanoid';
-import MinistryManager from './components/MinistryManager'; // NEW
+import { 
+  FormControl, 
+  InputLabel, 
+  Select, 
+  MenuItem, 
+  Checkbox, 
+  FormGroup, 
+  FormControlLabel, 
+  TextField,
+  FormHelperText,
+  Button
+} from '@mui/material';
+import MinistryManager from './components/MinistryManager';
 import VolunteerForm from './components/VolunteerForm';
 import VolunteerList from './components/VolunteerList';
 import RosterDisplay from './components/RosterDisplay';
@@ -21,9 +33,15 @@ function App() {
      return saved ? JSON.parse(saved).map(entry => ({ ...entry, date: new Date(entry.date) })) : [];
   });
   const [editingVolunteer, setEditingVolunteer] = useState(null);
-  const [startYear, setStartYear] = useState(() => parseInt(localStorage.getItem('startYear') || currentSystemYear.toString(), 10));
+  const [startYear, setStartYear] = useState(() => {
+    const savedStartYear = localStorage.getItem('startYear');
+    return savedStartYear ? parseInt(savedStartYear, 10) : currentSystemYear;
+  });
   const [startMonth, setStartMonth] = useState(() => parseInt(localStorage.getItem('startMonth') || currentSystemMonth.toString(), 10));
-  const [endYear, setEndYear] = useState(() => parseInt(localStorage.getItem('endYear') || currentSystemYear.toString(), 10));
+  const [endYear, setEndYear] = useState(() => {
+    const savedEndYear = localStorage.getItem('endYear');
+    return savedEndYear ? parseInt(savedEndYear, 10) : currentSystemYear;
+  });
   const [endMonth, setEndMonth] = useState(() => parseInt(localStorage.getItem('endMonth') || '11', 10));
   const [scheduleRule, setScheduleRule] = useState(() => JSON.parse(localStorage.getItem('scheduleRule') || JSON.stringify({ dayOfWeek: '0', occurrences: ['every'] })));
 
@@ -61,14 +79,15 @@ function App() {
     }
   };
   
-  const handleDateConfigChange = (setter, value) => {/* ... same ... */
-    setter(parseInt(value, 10));
+  const handleDateConfigChange = (setter, value) => {
+    setter(Number(value));
   };
-  const handleScheduleRuleChange = (e) => {/* ... same ... */
+  const handleScheduleRuleChange = (e) => {
     const { name, value } = e.target;
     setScheduleRule(prev => ({ ...prev, [name]: value }));
   };
-  const handleOccurrenceChange = (e) => {/* ... same ... */
+  
+  const handleOccurrenceChange = (e) => {
     const { value, checked } = e.target;
     setScheduleRule(prev => {
       let updatedOccurrences;
@@ -199,52 +218,116 @@ function App() {
         <h1>AutoRoster <span className="header-period-info">{rosterPeriodDescription}</span></h1>
       </header>
       <main>
-        <div className="period-config card"> {/* ... Period config UI ... */}
+        <div className="period-config card">
                 <h3>Configure Roster Period</h3>
                 <div className="period-config-grid">
                     <div>
-                        <label htmlFor="startYear">Start Year:</label>
-                        <input type="number" id="startYear" value={startYear} onChange={(e) => handleDateConfigChange(setStartYear, e.target.value)} min="2000" max="2050"/>
+                        <FormControl fullWidth margin="normal">
+                            <InputLabel id="startYear-label">Start Year</InputLabel>
+                            <Select
+                                labelId="startYear-label"
+                                id="startYear"
+                                value={startYear}
+                                onChange={(e) => handleDateConfigChange(setStartYear, e.target.value)}
+                                label="Start Year"
+                            >
+                                {Array.from({ length: 10 }, (_, i) => currentSystemYear + i - 3).map(year => (
+                                    <MenuItem key={`start-year-${year}`} value={year}>{year}</MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
                     </div>
                     <div>
-                        <label htmlFor="startMonth">Start Month:</label>
-                        <select id="startMonth" value={startMonth} onChange={(e) => handleDateConfigChange(setStartMonth, e.target.value)}>
-                            {MONTH_NAMES.map((month, index) => (<option key={`start-${index}`} value={index}>{month}</option>))}
-                        </select>
+                        <FormControl fullWidth margin="normal">
+                            <InputLabel id="startMonth-label">Start Month</InputLabel>
+                            <Select
+                                labelId="startMonth-label"
+                                id="startMonth"
+                                value={startMonth}
+                                onChange={(e) => handleDateConfigChange(setStartMonth, e.target.value)}
+                                label="Start Month"
+                            >
+                                {MONTH_NAMES.map((month, index) => (
+                                    <MenuItem key={`start-${index}`} value={index}>{month}</MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
                     </div>
                     <div>
-                        <label htmlFor="endYear">End Year:</label>
-                        <input type="number" id="endYear" value={endYear} onChange={(e) => handleDateConfigChange(setEndYear, e.target.value)} min="2000" max="2050"/>
+                        <FormControl fullWidth margin="normal">
+                            <InputLabel id="endYear-label">End Year</InputLabel>
+                            <Select
+                                labelId="endYear-label"
+                                id="endYear"
+                                value={endYear}
+                                onChange={(e) => handleDateConfigChange(setEndYear, e.target.value)}
+                                label="End Year"
+                            >
+                                {Array.from({ length: 10 }, (_, i) => currentSystemYear + i - 3).map(year => (
+                                    <MenuItem key={`end-year-${year}`} value={year}>{year}</MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
                     </div>
                     <div>
-                        <label htmlFor="endMonth">End Month:</label>
-                        <select id="endMonth" value={endMonth} onChange={(e) => handleDateConfigChange(setEndMonth, e.target.value)}>
-                            {MONTH_NAMES.map((month, index) => (<option key={`end-${index}`} value={index}>{month}</option>))}
-                        </select>
+                        <FormControl fullWidth margin="normal">
+                            <InputLabel id="endMonth-label">End Month</InputLabel>
+                            <Select
+                                labelId="endMonth-label"
+                                id="endMonth"
+                                value={endMonth}
+                                onChange={(e) => handleDateConfigChange(setEndMonth, e.target.value)}
+                                label="End Month"
+                            >
+                                {MONTH_NAMES.map((month, index) => (
+                                    <MenuItem key={`end-${index}`} value={index}>{month}</MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
                     </div>
                 </div>
             </div>
     
-            <div className="schedule-rule-config card"> {/* ... Schedule rule UI ... */}
+            <div className="schedule-rule-config card">
                 <h3>Configure Schedule Rule</h3>
-                <div> 
-                    <label htmlFor="dayOfWeek">Day of the Week:</label>
-                    <select name="dayOfWeek" id="dayOfWeek" value={scheduleRule.dayOfWeek} onChange={handleScheduleRuleChange}>
-                        {DAYS_OF_WEEK.map((day, index) => (<option key={index} value={index}>{day}</option>))}
-                    </select>
-                </div>
-                <div> 
-                    <label>Occurrences in Month:</label>
-                    <div className="occurrences-checkbox-group">
-                        {OCCURRENCE_OPTIONS.map(opt => (
-                            <div key={opt}>
-                            <input type="checkbox" id={`occurrence-${opt}`} value={opt} checked={scheduleRule.occurrences.includes(opt)} onChange={handleOccurrenceChange}
-                                disabled={(opt !== 'every' && scheduleRule.occurrences.includes('every')) || (opt === 'every' && scheduleRule.occurrences.some(o => o !== 'every'))}/>
-                            <label htmlFor={`occurrence-${opt}`}>{opt.charAt(0).toUpperCase() + opt.slice(1)}</label>
-                            </div>
+                <FormControl fullWidth margin="normal">
+                    <InputLabel id="dayOfWeek-label">Day of the Week</InputLabel>
+                    <Select
+                        labelId="dayOfWeek-label"
+                        id="dayOfWeek"
+                        name="dayOfWeek"
+                        value={scheduleRule.dayOfWeek}
+                        onChange={handleScheduleRuleChange}
+                        label="Day of the Week"
+                    >
+                        {DAYS_OF_WEEK.map((day, index) => (
+                            <MenuItem key={index} value={index.toString()}>{day}</MenuItem>
                         ))}
-                    </div>
-                    <small>Select 'every' OR one or more specific occurrences.</small>
+                    </Select>
+                </FormControl>
+                <div className="occurrence-selection">
+                    <FormControl component="fieldset" margin="normal">
+                        <FormHelperText>Occurrences in Month</FormHelperText>
+                        <FormGroup>
+                            {OCCURRENCE_OPTIONS.map(opt => (
+                                <FormControlLabel
+                                    key={opt}
+                                    control={
+                                        <Checkbox
+                                            id={`occurrence-${opt}`}
+                                            value={opt}
+                                            checked={scheduleRule.occurrences.includes(opt)}
+                                            onChange={handleOccurrenceChange}
+                                            disabled={(opt !== 'every' && scheduleRule.occurrences.includes('every')) || 
+                                                    (opt === 'every' && scheduleRule.occurrences.some(o => o !== 'every'))}
+                                        />
+                                    }
+                                    label={opt.charAt(0).toUpperCase() + opt.slice(1)}
+                                />
+                            ))}
+                        </FormGroup>
+                        <FormHelperText>Select 'every' OR one or more specific occurrences.</FormHelperText>
+                    </FormControl>
                 </div>
             </div>
 
@@ -262,9 +345,16 @@ function App() {
             existingVolunteer={editingVolunteer}
             ministries={ministries}
           />
-          <button onClick={generateRoster} className="generate-roster-btn card">
+          <Button 
+            onClick={generateRoster} 
+            variant="contained" 
+            color="primary"
+            size="large"
+            sx={{ mt: 2, py: 1.5, px: 3 }}
+            fullWidth
+          >
             Generate/Re-generate Roster {rosterPeriodDescription}
-          </button>
+          </Button>
         </div>
         {/* MODIFIED: Pass ministries to VolunteerList to display them */}
         <VolunteerList volunteers={volunteers} onEdit={handleEditVolunteer} onDelete={handleDeleteVolunteer} ministries={ministries} />
