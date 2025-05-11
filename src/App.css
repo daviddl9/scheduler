@@ -85,19 +85,6 @@ header {
   margin-bottom: 2em;
 }
 
-
-@media (prefers-color-scheme: light) {
-  .volunteer-list li {
-    border: 1px solid #ddd;
-  }
-  .roster-display th, .roster-display td {
-    border: 1px solid #ddd;
-  }
-  .roster-display th {
-    background-color: #e9ecef;
-  }
-}
-
 .schedule-rule-config div {
   margin-bottom: 1em;
 }
@@ -117,7 +104,7 @@ header {
 .occurrences-checkbox-group div {
   display: flex;
   align-items: center;
-  margin-bottom: 0.5em; /* Reset margin for items within this group */
+  margin-bottom: 0.5em;
 }
 
 .occurrences-checkbox-group input[type="checkbox"] {
@@ -130,21 +117,15 @@ header {
     color: #aaa;
 }
 
-@media (prefers-color-scheme: light) {
-  .schedule-rule-config small {
-    color: #555;
-  }
-}
-
-.period-config-grid { /* Changed from period-config-inputs */
+.period-config-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Responsive grid */
-  gap: 1em; /* Gap between grid items */
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1em;
 }
 
-.period-config-grid > div { /* Each input group */
+.period-config-grid > div {
   display: flex;
-  flex-direction: column; /* Stack label and input vertically */
+  flex-direction: column;
 }
 
 .period-config label {
@@ -156,16 +137,9 @@ header {
 .period-config select {
   width: 100%;
   box-sizing: border-box;
-  padding: 0.5em; /* Added padding for consistency */
-  border-radius: 4px; /* Added for consistency */
-  border: 1px solid #555; /* Added for consistency */
-}
-
-@media (prefers-color-scheme: light) {
-  .period-config input[type="number"],
-  .period-config select {
-    border: 1px solid #ccc;
-  }
+  padding: 0.5em;
+  border-radius: 4px;
+  border: 1px solid #555;
 }
 
 /* Ministry Manager */
@@ -203,8 +177,8 @@ header {
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 0.5em;
   margin-top: 0.5em;
-  max-height: 150px; /* Optional: if many ministries */
-  overflow-y: auto; /* Optional */
+  max-height: 150px;
+  overflow-y: auto;
   border: 1px solid #444;
   padding: 0.5em;
   border-radius: 4px;
@@ -215,10 +189,6 @@ header {
 }
 .ministry-checkbox-item input[type="checkbox"] {
   margin-right: 0.5em;
-}
-@media (prefers-color-scheme: light) {
-  .ministry-manager li { border-bottom: 1px solid #ddd; }
-  .ministries-checkbox-group { border: 1px solid #ccc; }
 }
 
 /* Roster Display */
@@ -234,11 +204,7 @@ header {
   display: block;
   margin-bottom: 0.75em;
   font-size: 1.1em;
-  color: #64b5f6; /* A highlight color for the date */
-}
-@media (prefers-color-scheme: light) {
-    .roster-date-entry > strong { color: #1976d2; }
-    .roster-date-entry { border-bottom: 1px dashed #ccc; }
+  color: #64b5f6;
 }
 
 .ministry-assignments-grid {
@@ -250,12 +216,12 @@ header {
   border: 1px solid #4a4a4a;
   padding: 0.75em;
   border-radius: 4px;
-  background-color: #303030;
+  background-color: #f5f5f5;
 }
 .ministry-assignment-item h5 {
   margin-top: 0;
   margin-bottom: 0.5em;
-  color: #e0e0e0;
+  color: #4a4a4a;
 }
 .ministry-assignment-item ul {
   list-style: disc;
@@ -264,11 +230,4 @@ header {
 }
 .ministry-assignment-item li {
   font-size: 0.9em;
-}
-@media (prefers-color-scheme: light) {
-  .ministry-assignment-item {
-    border: 1px solid #e0e0e0;
-    background-color: #f9f9f9;
-  }
-   .ministry-assignment-item h5 { color: #333; }
 }

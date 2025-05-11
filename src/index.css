@@ -4,31 +4,63 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color-scheme: light;
+  color: #213547;
+  background-color: #ffffff;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Light Mode Variables */
+  --bg-color-light: #ffffff;
+  --text-color-light: #213547;
+  --surface-color-light: #f9f9f9;
+  --primary-accent-light: #007bff;
+  --secondary-text-light: #555555;
+  --border-color-light: #dddddd;
+
+  /* Neutral/Shared Variables */
+  --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  --border-radius-small: 4px;
+  --border-radius-medium: 8px;
+  --spacing-unit: 8px;
+  --box-shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 body {
   margin: 0;
-  /* display: flex; // Removed to allow normal block flow for App.jsx
-  place-items: center; // Removed */
-  min-width: 320px;
-  min-height: 100vh;
+  font-family: var(--font-family-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  background-color: var(--bg-color-light);
+  color: var(--text-color-light);
 }
 
-#root { /* Ensure #root takes up space if body uses flex */
+#root {
   width: 100%;
 }
 
-
-h1, h2, h3, h4 {
+h1, h2, h3, h4, h5, h6 {
   margin-top: 0;
+  margin-bottom: calc(var(--spacing-unit) * 2);
+  font-weight: 600;
+}
+
+p {
+  line-height: 1.6;
+  margin-bottom: calc(var(--spacing-unit) * 2);
+}
+
+a {
+  text-decoration: none;
+  transition: color 0.2s ease-in-out;
+  color: var(--primary-accent-light);
+}
+a:hover {
+  color: #0056b3;
 }
 
 button {
@@ -38,7 +70,7 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: #f9f9f9;
   cursor: pointer;
   transition: border-color 0.25s;
   margin: 0.25em;
@@ -51,43 +83,23 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-}
-
-/* General card styling */
 .card {
   padding: 1.5em;
   margin-bottom: 1.5em;
-  background-color: #2c2c2c; /* Darker card for dark mode */
+  background-color: var(--surface-color-light);
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-@media (prefers-color-scheme: light) {
-  .card {
-    background-color: #f9f9f9; /* Lighter card for light mode */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  }
+  box-shadow: var(--box-shadow-soft);
+  border: 1px solid var(--border-color-light);
 }
 
 input[type="text"], select {
   padding: 0.5em;
   margin: 0.5em 0;
   border-radius: 4px;
-  border: 1px solid #555;
-  background-color: #333;
-  color: white;
-  width: calc(100% - 1.2em); /* Account for padding */
+  border: 1px solid var(--border-color-light);
+  background-color: var(--bg-color-light);
+  color: var(--text-color-light);
+  width: calc(100% - 1.2em);
 }
 
 label {
@@ -97,105 +109,11 @@ label {
   font-weight: bold;
 }
 
-
-@media (prefers-color-scheme: light) {
-  input[type="text"], select {
-    border: 1px solid #ccc;
-    background-color: #fff;
-    color: #213547;
-  }
-}
-
-:root {
-  /* Light Mode (Optional, if you plan a switcher) */
-  --bg-color-light: #ffffff;
-  --text-color-light: #213547;
-  --surface-color-light: #f9f9f9;
-  --primary-accent-light: #007bff;
-  --secondary-text-light: #555555;
-  --border-color-light: #dddddd;
-
-  /* Dark Mode Colors */
-  --bg-color-dark: #121212;
-  --text-color-dark: #E0E0E0;
-  --surface-color-dark: #1E1E1E; /* For cards, modals etc. */
-  --primary-accent-dark: #64B5F6; /* A nice blue for dark mode */
-  --secondary-text-dark: #A0A0A0;
-  --border-color-dark: #333333;
-  --hover-bg-dark: #2a2a2a;
-
-  /* Neutral/Shared Variables */
-  --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-  --border-radius-small: 4px;
-  --border-radius-medium: 8px;
-  --spacing-unit: 8px;
-  --box-shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.1); /* Adjust for dark mode */
-  --box-shadow-soft-dark: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-body {
-  margin: 0;
-  font-family: var(--font-family-sans);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-/* Default to dark mode variables if .dark class is on html */
-html.dark body {
-  background-color: var(--bg-color-dark);
-  color: var(--text-color-dark);
-}
-
-/* If you want to support light mode too */
-html:not(.dark) body {
-  background-color: var(--bg-color-light);
-  color: var(--text-color-light);
-}
-
-
-/* General Styling for Sleekness */
-h1, h2, h3, h4, h5, h6 {
-  margin-top: 0;
-  margin-bottom: calc(var(--spacing-unit) * 2);
-  font-weight: 600;
-}
-
-html.dark h1, html.dark h2, html.dark h3, html.dark h4, html.dark h5, html.dark h6 {
- color: #ffffff;
-}
-
-
-p {
-  line-height: 1.6;
-  margin-bottom: calc(var(--spacing-unit) * 2);
-}
-
-a {
-  text-decoration: none;
-  transition: color 0.2s ease-in-out;
-}
-
-html.dark a {
-  color: var(--primary-accent-dark);
-}
-html.dark a:hover {
-  color: #90CAF9; /* Lighter shade for hover */
-}
-
-html:not(.dark) a {
-  color: var(--primary-accent-light);
-}
-html:not(.dark) a:hover {
-  color: #0056b3;
-}
-
-
 /* Example: Sleek Button */
 .button-sleek {
   background-color: transparent;
-  border: 1px solid var(--primary-accent-dark);
-  color: var(--primary-accent-dark);
+  border: 1px solid var(--primary-accent-light);
+  color: var(--primary-accent-light);
   padding: calc(var(--spacing-unit) * 1.5) calc(var(--spacing-unit) * 3);
   border-radius: var(--border-radius-medium);
   font-size: 1rem;
@@ -204,71 +122,37 @@ html:not(.dark) a:hover {
   transition: background-color 0.2s ease, color 0.2s ease, transform 0.1s ease;
   outline: none;
 }
-
-html.dark .button-sleek:hover {
-  background-color: var(--primary-accent-dark);
-  color: var(--bg-color-dark); /* Or a very light color like #FFFFFF */
-  transform: translateY(-1px);
-}
-html.dark .button-sleek:focus {
-  box-shadow: 0 0 0 3px rgba(100, 181, 246, 0.4); /* Focus ring */
-}
-
-html:not(.dark) .button-sleek {
-  border-color: var(--primary-accent-light);
-  color: var(--primary-accent-light);
-}
-html:not(.dark) .button-sleek:hover {
+.button-sleek:hover {
   background-color: var(--primary-accent-light);
   color: var(--bg-color-light);
 }
-html:not(.dark) .button-sleek:focus {
+.button-sleek:focus {
   box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.4);
 }
 
-
 /* Example: Sleek Card */
 .card-sleek {
-  background-color: var(--surface-color-dark);
+  background-color: var(--surface-color-light);
   padding: calc(var(--spacing-unit) * 3);
   border-radius: var(--border-radius-medium);
-  box-shadow: var(--box-shadow-soft-dark);
-  margin-bottom: calc(var(--spacing-unit) * 2);
-  border: 1px solid var(--border-color-dark);
-}
-
-html:not(.dark) .card-sleek {
-  background-color: var(--surface-color-light);
   box-shadow: var(--box-shadow-soft);
+  margin-bottom: calc(var(--spacing-unit) * 2);
   border: 1px solid var(--border-color-light);
 }
 
 /* Example: Sleek Input */
 .input-sleek {
-  background-color: var(--surface-color-dark);
-  color: var(--text-color-dark);
-  border: 1px solid var(--border-color-dark);
+  background-color: var(--bg-color-light);
+  color: var(--text-color-light);
+  border: 1px solid var(--border-color-light);
   padding: calc(var(--spacing-unit) * 1.5) calc(var(--spacing-unit) * 2);
   border-radius: var(--border-radius-small);
   font-size: 1rem;
-  width: 100%; /* Or adjust as needed */
+  width: 100%;
   box-sizing: border-box;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-
-html.dark .input-sleek:focus {
-  outline: none;
-  border-color: var(--primary-accent-dark);
-  box-shadow: 0 0 0 3px rgba(100, 181, 246, 0.3);
-}
-
-html:not(.dark) .input-sleek {
-  background-color: var(--bg-color-light); /* Or a slightly off-white for light mode inputs */
-  color: var(--text-color-light);
-  border-color: var(--border-color-light);
-}
-
-html:not(.dark) .input-sleek:focus {
+.input-sleek:focus {
   outline: none;
   border-color: var(--primary-accent-light);
   box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
