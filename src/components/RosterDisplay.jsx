@@ -13,6 +13,8 @@ import {
   MenuItem,
   Typography
 } from '@mui/material';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 // MODIFIED: Accept full period props and a roster update function
 function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, endYear, endMonth, setRoster }) {
@@ -215,7 +217,139 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
     setEditDialogOpen(false);
   };
 
-  // Enhance volunteer list items with drag and drop capabilities and click to edit
+  // Function to generate unique colors for each volunteer
+  const generateColorMap = () => {
+    const colorMap = {};
+    const hueStep = 360 / (volunteers.length || 1);
+    
+    volunteers.forEach((volunteer, index) => {
+      const hue = index * hueStep;
+      colorMap[volunteer.id] = {
+        type: 'fill',
+        fgColor: { rgb: hslToHex(hue, 70, 80) }
+      };
+    });
+    
+    return colorMap;
+  };
+
+  // Convert HSL to Hex for Excel
+  const hslToHex = (h, s, l) => {
+    s /= 100;
+    l /= 100;
+    
+    const c = (1 - Math.abs(2 * l - 1)) * s;
+    const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+    const m = l - c / 2;
+    
+    let r, g, b;
+    
+    if (0 <= h && h < 60) {
+      [r, g, b] = [c, x, 0];
+    } else if (60 <= h && h < 120) {
+      [r, g, b] = [x, c, 0];
+    } else if (120 <= h && h < 180) {
+      [r, g, b] = [0, c, x];
+    } else if (180 <= h && h < 240) {
+      [r, g, b] = [0, x, c];
+    } else if (240 <= h && h < 300) {
+      [r, g, b] = [x, 0, c];
+    } else {
+      [r, g, b] = [c, 0, x];
+    }
+    
+    const rHex = Math.round((r + m) * 255).toString(16).padStart(2, '0');
+    const gHex = Math.round((g + m) * 255).toString(16).padStart(2, '0');
+    const bHex = Math.round((b + m) * 255).toString(16).padStart(2, '0');
+    
+    return rHex + gHex + bHex;
+  };
+
+  // Export roster to Excel
+  const exportToExcel = () => {
+    const colorMap = generateColorMap();
+    const sortedRoster = [...roster].sort((a, b) => a.date - b.date);
+    const headerRow = ['Date', ...ministries.map(m => m.name)];
+    const dataRows = [];
+    const cellStyles = [];
+    
+    sortedRoster.forEach((entry) => {
+      const formattedDate = formatDate(entry.date);
+      const rowData = [formattedDate];
+      const rowStyles = [null];
+      
+      ministries.forEach(ministry => {
+        const assignedVolunteers = entry.assignmentsByMinistry[ministry.id] || [];
+        const cellValue = assignedVolunteers.length > 0 
+          ? assignedVolunteers.map(id => getVolunteerName(id).props ? 'UNASSIGNED' : getVolunteerName(id)).join('\n')
+          : '';
+        
+        rowData.push(cellValue);
+        
+        if (assignedVolunteers.length > 0) {
+          const volunteersInCell = assignedVolunteers.map(id => {
+            return {
+              id,
+              name: getVolunteerName(id).props ? 'UNASSIGNED' : getVolunteerName(id),
+              style: colorMap[id]
+            };
+          });
+          rowStyles.push(volunteersInCell);
+        } else {
+          rowStyles.push(null);
+        }
+      });
+      
+      dataRows.push(rowData);
+      cellStyles.push(rowStyles);
+    });
+    
+    const allRows = [headerRow, ...dataRows];
+    const ws = XLSX.utils.aoa_to_sheet(allRows);
+    
+    for (let rowIndex = 1; rowIndex < allRows.length; rowIndex++) {
+      const rowStyles = cellStyles[rowIndex - 1];
+      
+      for (let colIndex = 1; colIndex < rowStyles.length; colIndex++) {
+        const cellStyle = rowStyles[colIndex];
+        if (cellStyle) {
+          const cellRef = XLSX.utils.encode_cell({ r: rowIndex, c: colIndex });
+          if (!ws[cellRef]) ws[cellRef] = {};
+          const cellText = allRows[rowIndex][colIndex];
+          const lines = cellText.split('\n');
+          
+          if (lines.length > 0 && cellStyle) {
+            ws[cellRef].s = {
+              font: { color: { rgb: "000000" } },
+              alignment: { vertical: 'top', wrapText: true }
+            };
+            
+            ws[cellRef].r = cellStyle.map((vol, idx) => {
+              return {
+                t: 's',
+                v: vol.name + (idx < lines.length - 1 ? '\n' : ''),
+                s: vol.style
+              };
+            });
+          }
+        }
+      }
+    }
+    
+    const colWidths = [{ wch: 15 }];
+    ministries.forEach(() => colWidths.push({ wch: 25 }));
+    ws['!cols'] = colWidths;
+    
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Roster');
+    
+    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const fileName = `Roster_${MONTH_NAMES[startMonth]}_${startYear}-${MONTH_NAMES[endMonth]}_${endYear}.xlsx`;
+    
+    const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(blob, fileName);
+  };
+
   const renderVolunteerItem = (volId, ministryId, dateKey) => {
     const isDragging = volId === draggedVolunteer && dateKey === draggedDateKey && ministryId === draggedMinistryId;
     
@@ -244,7 +378,18 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
 
   return (
     <div className="roster-display card">
-      <h3>{rosterPeriodTitle}</h3>
+      <div className="roster-header">
+        <h3>{rosterPeriodTitle}</h3>
+        <Button 
+          variant="outlined" 
+          color="primary" 
+          onClick={exportToExcel}
+          style={{ marginLeft: 'auto' }}
+          size="small"
+        >
+          Export to Excel
+        </Button>
+      </div>
       <p><small>Drag and drop volunteers to swap positions between the same ministry roles on different dates, or click on a volunteer to edit directly.</small></p>
       {sortedYearMonthKeys.map(ymKey => {
         const group = groupedByYearMonth[ymKey];
@@ -252,7 +397,6 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
           <div key={ymKey} className="roster-month-year-group">
             <h4>{MONTH_NAMES[group.month]} {group.year}</h4>
             {group.dateEntries.map(entry => {
-              // Create a unique date key for drag/drop
               const dateKey = `${entry.date.getFullYear()}-${entry.date.getMonth()}-${entry.date.getDate()}`;
               
               return (

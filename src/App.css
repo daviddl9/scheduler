@@ -308,3 +308,19 @@ header {
 .empty-volunteer-slot small {
   color: #666;
 }
+
+/* Roster export button styling */
+.roster-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.roster-header h3 {
+  margin: 0;
+}
+
+.roster-header button {
+  white-space: nowrap;
+}
