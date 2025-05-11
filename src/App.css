@@ -135,3 +135,35 @@ header {
     color: #555;
   }
 }
+
+.period-config-grid { /* Changed from period-config-inputs */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Responsive grid */
+  gap: 1em; /* Gap between grid items */
+}
+
+.period-config-grid > div { /* Each input group */
+  display: flex;
+  flex-direction: column; /* Stack label and input vertically */
+}
+
+.period-config label {
+  margin-bottom: 0.3em;
+  font-weight: normal;
+}
+
+.period-config input[type="number"],
+.period-config select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.5em; /* Added padding for consistency */
+  border-radius: 4px; /* Added for consistency */
+  border: 1px solid #555; /* Added for consistency */
+}
+
+@media (prefers-color-scheme: light) {
+  .period-config input[type="number"],
+  .period-config select {
+    border: 1px solid #ccc;
+  }
+}

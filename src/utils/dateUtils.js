@@ -9,8 +9,7 @@ export const DAYS_OF_WEEK = [
   'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
 ];
 
-// Helper to get all instances of a specific day of the week in a given month and year
-const getDaysInMonth = (year, month, dayOfWeek) => {
+const getDaysInMonth = (year, month, dayOfWeek) => { /* ... (same as before) ... */
   const dates = [];
   const date = new Date(year, month, 1);
   while (date.getMonth() === month) {
@@ -22,67 +21,58 @@ const getDaysInMonth = (year, month, dayOfWeek) => {
   return dates;
 };
 
-export const getScheduledDatesInYear = (year, rule) => {
-  const { dayOfWeek, occurrences } = rule; // dayOfWeek is 0-6, occurrences is array like ['1st', '3rd'] or ['every']
+export const getScheduledDatesForPeriod = (startYear, startMonthIndex, endYear, endMonthIndex, rule) => {
+  const { dayOfWeek, occurrences } = rule;
   const scheduledDates = [];
 
-  if (!occurrences || occurrences.length === 0) {
-    return []; // No valid rule
-  }
+  if (!occurrences || occurrences.length === 0) return [];
+  if (endYear < startYear || (endYear === startYear && endMonthIndex < startMonthIndex)) return []; // Basic validation
 
-  for (let month = 0; month < 12; month++) {
-    const daysInCurrentMonth = getDaysInMonth(year, month, parseInt(dayOfWeek));
+  for (let currentYear = startYear; currentYear <= endYear; currentYear++) {
+    const monthStartLoop = (currentYear === startYear) ? startMonthIndex : 0;
+    const monthEndLoop = (currentYear === endYear) ? endMonthIndex : 11;
 
-    if (daysInCurrentMonth.length === 0) continue;
+    for (let currentMonth = monthStartLoop; currentMonth <= monthEndLoop; currentMonth++) {
+      const daysInCurrentMonthMatchingDayOfWeek = getDaysInMonth(currentYear, currentMonth, parseInt(dayOfWeek));
 
-    if (occurrences.includes('every')) {
-      scheduledDates.push(...daysInCurrentMonth);
-    } else {
-      const specificDatesThisMonth = [];
-      occurrences.forEach(occurrence => {
-        switch (occurrence) {
-          case '1st':
-            if (daysInCurrentMonth[0]) specificDatesThisMonth.push(daysInCurrentMonth[0]);
-            break;
-          case '2nd':
-            if (daysInCurrentMonth[1]) specificDatesThisMonth.push(daysInCurrentMonth[1]);
-            break;
-          case '3rd':
-            if (daysInCurrentMonth[2]) specificDatesThisMonth.push(daysInCurrentMonth[2]);
-            break;
-          case '4th':
-            if (daysInCurrentMonth[3]) specificDatesThisMonth.push(daysInCurrentMonth[3]);
-            break;
-          case '5th': // Some months might have a 5th occurrence
-            if (daysInCurrentMonth[4]) specificDatesThisMonth.push(daysInCurrentMonth[4]);
-            break;
-          case 'last':
-            if (daysInCurrentMonth.length > 0) {
-              specificDatesThisMonth.push(daysInCurrentMonth[daysInCurrentMonth.length - 1]);
-            }
-            break;
-          default:
-            // Potentially handle specific date numbers later if needed
-            break;
-        }
-      });
-      // Add unique dates to scheduledDates
-      specificDatesThisMonth.forEach(d => {
-        if (!scheduledDates.find(sd => sd.getTime() === d.getTime())) {
-          scheduledDates.push(d);
-        }
-      });
+      if (daysInCurrentMonthMatchingDayOfWeek.length === 0) continue;
+
+      if (occurrences.includes('every')) {
+        scheduledDates.push(...daysInCurrentMonthMatchingDayOfWeek);
+      } else {
+        const specificDatesThisMonth = [];
+        occurrences.forEach(occurrence => {
+          switch (occurrence) {
+            case '1st': if (daysInCurrentMonthMatchingDayOfWeek[0]) specificDatesThisMonth.push(daysInCurrentMonthMatchingDayOfWeek[0]); break;
+            case '2nd': if (daysInCurrentMonthMatchingDayOfWeek[1]) specificDatesThisMonth.push(daysInCurrentMonthMatchingDayOfWeek[1]); break;
+            case '3rd': if (daysInCurrentMonthMatchingDayOfWeek[2]) specificDatesThisMonth.push(daysInCurrentMonthMatchingDayOfWeek[2]); break;
+            case '4th': if (daysInCurrentMonthMatchingDayOfWeek[3]) specificDatesThisMonth.push(daysInCurrentMonthMatchingDayOfWeek[3]); break;
+            case '5th': if (daysInCurrentMonthMatchingDayOfWeek[4]) specificDatesThisMonth.push(daysInCurrentMonthMatchingDayOfWeek[4]); break;
+            case 'last':
+              if (daysInCurrentMonthMatchingDayOfWeek.length > 0) {
+                specificDatesThisMonth.push(daysInCurrentMonthMatchingDayOfWeek[daysInCurrentMonthMatchingDayOfWeek.length - 1]);
+              }
+              break;
+            default: break;
+          }
+        });
+        // Add unique dates to scheduledDates (though usually a date won't be added twice by this logic within a single month)
+        specificDatesThisMonth.forEach(d => {
+          if (!scheduledDates.find(sd => sd.getTime() === d.getTime())) {
+            scheduledDates.push(d);
+          }
+        });
+      }
     }
   }
-  scheduledDates.sort((a, b) => a.getTime() - b.getTime()); // Ensure chronological order
+  scheduledDates.sort((a, b) => a.getTime() - b.getTime());
   return scheduledDates;
 };
 
-
-export const formatDate = (date) => {
+export const formatDate = (date) => { /* ... (same as before, includes day name) ... */
   if (!date) return '';
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
   const day = date.getDate().toString().padStart(2, '0');
-  return `${year}-${month}-${day} (${DAYS_OF_WEEK[date.getDay()]})`; // Add day name
+  return `${year}-${month}-${day} (${DAYS_OF_WEEK[date.getDay()]})`;
 };

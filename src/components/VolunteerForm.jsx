@@ -4,7 +4,7 @@ import { MONTH_NAMES } from '../utils/dateUtils';
 
 const INITIAL_FORM_STATE = {
   name: '',
-  preferredFrequency: 'monthly', // 'weekly', 'fortnightly', 'monthly'
+  preferredFrequency: 'monthly', // Default or an existing option
   unavailableMonths: [],
 };
 
@@ -16,19 +16,19 @@ function VolunteerForm({ onSubmit, existingVolunteer }) {
       setFormData({
         name: existingVolunteer.name,
         preferredFrequency: existingVolunteer.preferredFrequency,
-        unavailableMonths: existingVolunteer.unavailableMonths.map(String), // Ensure strings for checkbox values
+        unavailableMonths: existingVolunteer.unavailableMonths.map(String),
       });
     } else {
       setFormData(INITIAL_FORM_STATE);
     }
   }, [existingVolunteer]);
 
-  const handleChange = (e) => {
+  const handleChange = (e) => { /* ... (same as before) ... */
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleMonthChange = (e) => {
+  const handleMonthChange = (e) => { /* ... (same as before) ... */
     const { value, checked } = e.target;
     const monthIndex = parseInt(value);
     setFormData(prev => {
@@ -39,7 +39,7 @@ function VolunteerForm({ onSubmit, existingVolunteer }) {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e) => { /* ... (same as before) ... */
     e.preventDefault();
     if (!formData.name) {
       alert('Please enter a volunteer name.');
@@ -47,9 +47,9 @@ function VolunteerForm({ onSubmit, existingVolunteer }) {
     }
     onSubmit({
       ...formData,
-      unavailableMonths: formData.unavailableMonths.map(Number), // Convert back to numbers
+      unavailableMonths: formData.unavailableMonths.map(Number),
     });
-    if (!existingVolunteer) { // Reset only if it's a new submission
+    if (!existingVolunteer) {
       setFormData(INITIAL_FORM_STATE);
     }
   };
@@ -79,6 +79,8 @@ function VolunteerForm({ onSubmit, existingVolunteer }) {
           <option value="weekly">Once a week</option>
           <option value="fortnightly">Once every two weeks</option>
           <option value="monthly">Once a month (approx. every 4 weeks)</option>
+          {/* --- NEW OPTION ADDED --- */}
+          <option value="bimonthly">Once every two months (approx. every 8 weeks)</option>
         </select>
       </div>
       <div>
