@@ -1,6 +1,18 @@
 // src/components/RosterDisplay.jsx
 import React, { useState } from 'react';
 import { formatDate, MONTH_NAMES } from '../utils/dateUtils';
+import { 
+  Dialog, 
+  DialogTitle, 
+  DialogContent, 
+  DialogActions, 
+  Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Typography
+} from '@mui/material';
 
 // MODIFIED: Accept full period props and a roster update function
 function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, endYear, endMonth, setRoster }) {
@@ -8,6 +20,14 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
   const [draggedVolunteer, setDraggedVolunteer] = useState(null);
   const [draggedMinistryId, setDraggedMinistryId] = useState(null);
   const [draggedDateKey, setDraggedDateKey] = useState(null);
+  
+  // Add state for editing volunteers
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingVolunteerId, setEditingVolunteerId] = useState(null);
+  const [editingMinistryId, setEditingMinistryId] = useState(null);
+  const [editingDateKey, setEditingDateKey] = useState(null);
+  const [selectedReplacement, setSelectedReplacement] = useState('');
+  const [isAddingNew, setIsAddingNew] = useState(false);
   
   if (ministries.length === 0) {
     return <p className="card">Please define ministries first to see the roster display.</p>;
@@ -124,7 +144,78 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
     setDraggedDateKey(null);
   };
 
-  // Enhance volunteer list items with drag and drop capabilities
+  // Handle opening the edit dialog
+  const handleEditClick = (volunteerId, ministryId, dateKey) => {
+    setEditingVolunteerId(volunteerId);
+    setEditingMinistryId(ministryId);
+    setEditingDateKey(dateKey);
+    setSelectedReplacement('');
+    setIsAddingNew(false);
+    setEditDialogOpen(true);
+  };
+
+  // Handle opening the add volunteer dialog for empty ministries
+  const handleAddVolunteerClick = (ministryId, dateKey) => {
+    setEditingVolunteerId(null);
+    setEditingMinistryId(ministryId);
+    setEditingDateKey(dateKey);
+    setSelectedReplacement('');
+    setIsAddingNew(true);
+    setEditDialogOpen(true);
+  };
+
+  // Get eligible volunteers for the selected ministry
+  const getEligibleVolunteersForMinistry = (ministryId) => {
+    return volunteers.filter(volunteer => 
+      volunteer.ministryIds && volunteer.ministryIds.includes(ministryId)
+    );
+  };
+
+  // Handle the volunteer replacement or addition
+  const handleReplaceVolunteer = () => {
+    if (!selectedReplacement) {
+      setEditDialogOpen(false);
+      return;
+    }
+
+    const entryIndex = roster.findIndex(entry => {
+      const entryDateKey = `${entry.date.getFullYear()}-${entry.date.getMonth()}-${entry.date.getDate()}`;
+      return entryDateKey === editingDateKey;
+    });
+
+    if (entryIndex !== -1) {
+      // Create a deep copy of the roster
+      const updatedRoster = JSON.parse(JSON.stringify(roster));
+      
+      // Convert date strings back to Date objects
+      updatedRoster.forEach(entry => {
+        entry.date = new Date(entry.date);
+      });
+
+      if (isAddingNew) {
+        // Adding a new volunteer to the ministry
+        if (!updatedRoster[entryIndex].assignmentsByMinistry[editingMinistryId]) {
+          updatedRoster[entryIndex].assignmentsByMinistry[editingMinistryId] = [];
+        }
+        updatedRoster[entryIndex].assignmentsByMinistry[editingMinistryId].push(selectedReplacement);
+      } else {
+        // Replacing an existing volunteer
+        const volunteerIndex = updatedRoster[entryIndex].assignmentsByMinistry[editingMinistryId].indexOf(editingVolunteerId);
+        
+        if (volunteerIndex !== -1) {
+          // Replace the volunteer
+          updatedRoster[entryIndex].assignmentsByMinistry[editingMinistryId][volunteerIndex] = selectedReplacement;
+        }
+      }
+      
+      // Update the roster state
+      setRoster(updatedRoster);
+    }
+    
+    setEditDialogOpen(false);
+  };
+
+  // Enhance volunteer list items with drag and drop capabilities and click to edit
   const renderVolunteerItem = (volId, ministryId, dateKey) => {
     const isDragging = volId === draggedVolunteer && dateKey === draggedDateKey && ministryId === draggedMinistryId;
     
@@ -135,8 +226,9 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
         onDragStart={(e) => handleDragStart(e, volId, ministryId, dateKey)} 
         onDragOver={handleDragOver}
         onDrop={(e) => handleDrop(e, volId, ministryId, dateKey)}
+        onClick={() => handleEditClick(volId, ministryId, dateKey)}
         style={{
-          cursor: 'move',
+          cursor: 'pointer',
           opacity: isDragging ? 0.5 : 1,
           backgroundColor: isDragging ? '#f0f0f0' : 'transparent',
           padding: '4px',
@@ -153,7 +245,7 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
   return (
     <div className="roster-display card">
       <h3>{rosterPeriodTitle}</h3>
-      <p><small>Drag and drop volunteers to swap positions between the same ministry roles on different dates.</small></p>
+      <p><small>Drag and drop volunteers to swap positions between the same ministry roles on different dates, or click on a volunteer to edit directly.</small></p>
       {sortedYearMonthKeys.map(ymKey => {
         const group = groupedByYearMonth[ymKey];
         return (
@@ -181,7 +273,12 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
                               {assignedToThisMinistry.map(volId => renderVolunteerItem(volId, ministry.id, dateKey))}
                             </ul>
                           ) : (
-                            <p><small>No volunteers assigned.</small></p>
+                            <div 
+                              className="empty-volunteer-slot"
+                              onClick={() => handleAddVolunteerClick(ministry.id, dateKey)}
+                            >
+                              <p><small>No volunteers assigned. Click to add.</small></p>
+                            </div>
                           )}
                         </div>
                       );
@@ -193,6 +290,51 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
           </div>
         );
       })}
+      
+      {/* Edit Dialog */}
+      <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          {isAddingNew ? "Add Volunteer Assignment" : "Edit Volunteer Assignment"}
+        </DialogTitle>
+        <DialogContent>
+          {!isAddingNew && (
+            <Typography variant="body2" gutterBottom style={{ marginBottom: '16px' }}>
+              Current assignment: <strong>{editingVolunteerId ? getVolunteerName(editingVolunteerId) : ''}</strong>
+            </Typography>
+          )}
+          <FormControl fullWidth margin="normal">
+            <InputLabel id="replacement-volunteer-label">
+              {isAddingNew ? "Assign volunteer" : "Replace with"}
+            </InputLabel>
+            <Select
+              labelId="replacement-volunteer-label"
+              id="replacement-volunteer"
+              value={selectedReplacement}
+              onChange={(e) => setSelectedReplacement(e.target.value)}
+              label={isAddingNew ? "Assign volunteer" : "Replace with"}
+            >
+              {editingMinistryId && getEligibleVolunteersForMinistry(editingMinistryId).map((volunteer) => (
+                <MenuItem key={volunteer.id} value={volunteer.id}>
+                  {volunteer.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <Typography variant="caption" color="text.secondary" style={{ marginTop: '8px', display: 'block' }}>
+            Only volunteers who serve in this ministry can be selected.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditDialogOpen(false)} color="inherit">Cancel</Button>
+          <Button 
+            onClick={handleReplaceVolunteer} 
+            color="primary" 
+            disabled={!selectedReplacement}
+          >
+            {isAddingNew ? "Add" : "Replace"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }
