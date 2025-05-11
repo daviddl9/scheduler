@@ -359,7 +359,16 @@ function App() {
         {/* MODIFIED: Pass ministries to VolunteerList to display them */}
         <VolunteerList volunteers={volunteers} onEdit={handleEditVolunteer} onDelete={handleDeleteVolunteer} ministries={ministries} />
         {/* MODIFIED: Pass ministries to RosterDisplay */}
-        <RosterDisplay roster={roster} volunteers={volunteers} ministries={ministries} startYear={startYear} startMonth={startMonth} endYear={endYear} endMonth={endMonth} />
+        <RosterDisplay 
+          roster={roster} 
+          volunteers={volunteers} 
+          ministries={ministries} 
+          startYear={startYear} 
+          startMonth={startMonth} 
+          endYear={endYear} 
+          endMonth={endMonth}
+          setRoster={setRoster}
+        />
       </main>
     </div>
   );
