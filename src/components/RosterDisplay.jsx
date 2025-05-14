@@ -231,12 +231,7 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
     
     volunteers.forEach((volunteer, index) => {
       const hue = index * hueStep;
-      colorMap[volunteer.id] = {
-        fill: { 
-          patternType: 'solid',
-          fgColor: { rgb: hslToHex(hue, 70, 80) }
-        }
-      };
+      colorMap[volunteer.id] = hslToHex(hue, 70, 80);
     });
     
     return colorMap;
@@ -316,11 +311,7 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
   const exportToExcel = () => {
     const colorMap = generateColorMap();
     // Add a special color for UNASSIGNED
-    colorMap['UNASSIGNED'] = {
-      fill: { 
-        fgColor: { rgb: "FFCC00" } // Orange for UNASSIGNED
-      }
-    };
+    colorMap['UNASSIGNED'] = "FFCC00"; // Orange for UNASSIGNED
     
     const sortedRoster = [...roster].sort((a, b) => a.date - b.date);
     const headerRow = ['Date', ...ministries.map(m => m.name)];
@@ -346,6 +337,11 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
     const allRows = [headerRow, ...dataRows];
     const ws = XLSX.utils.aoa_to_sheet(allRows);
     
+    // Define range to prevent extra column
+    const range = XLSX.utils.decode_range(ws['!ref']);
+    range.e.c = ministries.length; // Limit to date column + ministry columns only
+    ws['!ref'] = XLSX.utils.encode_range(range);
+    
     // Apply styling to cells with volunteer names
     for (let rowIndex = 1; rowIndex < allRows.length; rowIndex++) {
       const entry = sortedRoster[rowIndex - 1];
@@ -360,12 +356,15 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
           
           // Set cell styles for each volunteer
           if (!ws[cellRef].s) {
+            const volunteerId = assignedVolunteers[0];
+            const colorToUse = colorMap[volunteerId] || "FFFFFF"; // Default to white if no color found
+              
             ws[cellRef].s = {
               font: { color: { rgb: "000000" } },
               alignment: { vertical: 'top', wrapText: true },
               fill: {
                 patternType: 'solid',
-                fgColor: { rgb: colorMap[assignedVolunteers[0]].fgColor.rgb }
+                fgColor: { rgb: colorToUse }
               }
             };
           }
