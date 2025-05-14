@@ -87,7 +87,7 @@ function VolunteerForm({ onSubmit, existingVolunteer, ministries }) {
   return (
     <Paper component="form" onSubmit={handleSubmit} className="volunteer-form card" elevation={0}>
       <Typography variant="h5" component="h3" gutterBottom>
-        {existingVolunteer ? 'Edit Volunteer' : 'Add New Volunteer'}
+        {existingVolunteer ? 'Edit People' : 'Add New Person'}
       </Typography>
 
       <Grid container spacing={3}>
@@ -185,7 +185,7 @@ function VolunteerForm({ onSubmit, existingVolunteer, ministries }) {
               variant="contained" 
               color="primary"
             >
-              {existingVolunteer ? 'Save Changes' : 'Add Volunteer'}
+              {existingVolunteer ? 'Save Changes' : 'Add Person'}
             </Button>
             {existingVolunteer && (
               <Button 

@@ -11,8 +11,12 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Typography
+  Typography,
+  Snackbar,
+  IconButton,
+  Tooltip
 } from '@mui/material';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 
@@ -31,6 +35,9 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
   const [selectedReplacement, setSelectedReplacement] = useState('');
   const [isAddingNew, setIsAddingNew] = useState(false);
   
+  // Add state for share URL functionality
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+
   if (ministries.length === 0) {
     return <p className="card">Please define ministries first to see the roster display.</p>;
   }
@@ -41,7 +48,7 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
   const getVolunteerName = (id) => {
     if (id === 'UNASSIGNED') return <span style={{ color: 'orange' }}>UNASSIGNED</span>;
     const volunteer = volunteers.find(v => v.id === id);
-    return volunteer ? volunteer.name : 'Unknown Volunteer';
+    return volunteer ? volunteer.name : 'Unknown Person';
   };
 
   const rosterPeriodTitle = `Generated Roster for ${MONTH_NAMES[startMonth]} ${startYear} - ${MONTH_NAMES[endMonth]} ${endYear}`;
@@ -225,8 +232,10 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
     volunteers.forEach((volunteer, index) => {
       const hue = index * hueStep;
       colorMap[volunteer.id] = {
-        type: 'fill',
-        fgColor: { rgb: hslToHex(hue, 70, 80) }
+        fill: { 
+          patternType: 'solid',
+          fgColor: { rgb: hslToHex(hue, 70, 80) }
+        }
       };
     });
     
@@ -264,19 +273,62 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
     
     return rHex + gHex + bHex;
   };
+  
+  // Function to generate and copy share URL
+  const generateShareUrl = () => {
+    try {
+      // Convert roster to a format suitable for URL sharing
+      const shareData = {
+        roster: roster.map(entry => ({
+          ...entry,
+          date: entry.date.toISOString(), // Convert date to string for JSON serialization
+        })),
+        volunteers,
+        ministries,
+        startYear,
+        startMonth,
+        endYear,
+        endMonth
+      };
+      
+      // Encode data as base64 to make URL shorter and avoid special character issues
+      const compressedData = btoa(JSON.stringify(shareData));
+      
+      // Create the URL with the data as a query parameter
+      const shareUrl = `${window.location.origin}${window.location.pathname}?data=${encodeURIComponent(compressedData)}`;
+      
+      // Copy to clipboard
+      navigator.clipboard.writeText(shareUrl)
+        .then(() => {
+          setSnackbarOpen(true);
+        })
+        .catch(err => {
+          console.error('Failed to copy URL: ', err);
+          alert('Failed to copy URL to clipboard');
+        });
+    } catch (error) {
+      console.error('Error generating share URL: ', error);
+      alert('Failed to generate share URL');
+    }
+  };
 
   // Export roster to Excel
   const exportToExcel = () => {
     const colorMap = generateColorMap();
+    // Add a special color for UNASSIGNED
+    colorMap['UNASSIGNED'] = {
+      fill: { 
+        fgColor: { rgb: "FFCC00" } // Orange for UNASSIGNED
+      }
+    };
+    
     const sortedRoster = [...roster].sort((a, b) => a.date - b.date);
     const headerRow = ['Date', ...ministries.map(m => m.name)];
     const dataRows = [];
-    const cellStyles = [];
     
     sortedRoster.forEach((entry) => {
       const formattedDate = formatDate(entry.date);
       const rowData = [formattedDate];
-      const rowStyles = [null];
       
       ministries.forEach(ministry => {
         const assignedVolunteers = entry.assignmentsByMinistry[ministry.id] || [];
@@ -285,57 +337,43 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
           : '';
         
         rowData.push(cellValue);
-        
-        if (assignedVolunteers.length > 0) {
-          const volunteersInCell = assignedVolunteers.map(id => {
-            return {
-              id,
-              name: getVolunteerName(id).props ? 'UNASSIGNED' : getVolunteerName(id),
-              style: colorMap[id]
-            };
-          });
-          rowStyles.push(volunteersInCell);
-        } else {
-          rowStyles.push(null);
-        }
       });
       
       dataRows.push(rowData);
-      cellStyles.push(rowStyles);
     });
     
+    // Create worksheet with basic data
     const allRows = [headerRow, ...dataRows];
     const ws = XLSX.utils.aoa_to_sheet(allRows);
     
+    // Apply styling to cells with volunteer names
     for (let rowIndex = 1; rowIndex < allRows.length; rowIndex++) {
-      const rowStyles = cellStyles[rowIndex - 1];
+      const entry = sortedRoster[rowIndex - 1];
       
-      for (let colIndex = 1; colIndex < rowStyles.length; colIndex++) {
-        const cellStyle = rowStyles[colIndex];
-        if (cellStyle) {
+      // For each ministry column
+      ministries.forEach((ministry, colIdx) => {
+        const colIndex = colIdx + 1; // +1 because first column is date
+        const assignedVolunteers = entry.assignmentsByMinistry[ministry.id] || [];
+        
+        if (assignedVolunteers.length > 0) {
           const cellRef = XLSX.utils.encode_cell({ r: rowIndex, c: colIndex });
-          if (!ws[cellRef]) ws[cellRef] = {};
-          const cellText = allRows[rowIndex][colIndex];
-          const lines = cellText.split('\n');
           
-          if (lines.length > 0 && cellStyle) {
+          // Set cell styles for each volunteer
+          if (!ws[cellRef].s) {
             ws[cellRef].s = {
               font: { color: { rgb: "000000" } },
-              alignment: { vertical: 'top', wrapText: true }
+              alignment: { vertical: 'top', wrapText: true },
+              fill: {
+                patternType: 'solid',
+                fgColor: { rgb: colorMap[assignedVolunteers[0]].fgColor.rgb }
+              }
             };
-            
-            ws[cellRef].r = cellStyle.map((vol, idx) => {
-              return {
-                t: 's',
-                v: vol.name + (idx < lines.length - 1 ? '\n' : ''),
-                s: vol.style
-              };
-            });
           }
         }
-      }
+      });
     }
     
+    // Set column widths
     const colWidths = [{ wch: 15 }];
     ministries.forEach(() => colWidths.push({ wch: 25 }));
     ws['!cols'] = colWidths;
@@ -380,17 +418,29 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
     <div className="roster-display card">
       <div className="roster-header">
         <h3>{rosterPeriodTitle}</h3>
-        <Button 
-          variant="outlined" 
-          color="primary" 
-          onClick={exportToExcel}
-          style={{ marginLeft: 'auto' }}
-          size="small"
-        >
-          Export to Excel
-        </Button>
+        <div style={{ display: 'flex', gap: '10px', marginLeft: 'auto' }}>
+          <Tooltip title="Copy shareable link to clipboard">
+            <Button 
+              variant="outlined" 
+              color="secondary" 
+              onClick={generateShareUrl}
+              size="small"
+              startIcon={<ContentCopyIcon />}
+            >
+              Copy Share Link
+            </Button>
+          </Tooltip>
+          <Button 
+            variant="outlined" 
+            color="primary" 
+            onClick={exportToExcel}
+            size="small"
+          >
+            Export to Excel
+          </Button>
+        </div>
       </div>
-      <p><small>Drag and drop volunteers to swap positions between the same ministry roles on different dates, or click on a volunteer to edit directly.</small></p>
+      <p><small>Drag and drop a person's name to swap positions between the same roles on different dates, or click on a person to edit directly.</small></p>
       {sortedYearMonthKeys.map(ymKey => {
         const group = groupedByYearMonth[ymKey];
         return (
@@ -421,7 +471,7 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
                               className="empty-volunteer-slot"
                               onClick={() => handleAddVolunteerClick(ministry.id, dateKey)}
                             >
-                              <p><small>No volunteers assigned. Click to add.</small></p>
+                              <p><small>Nobody assigned. Click to add.</small></p>
                             </div>
                           )}
                         </div>
@@ -438,7 +488,7 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
       {/* Edit Dialog */}
       <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>
-          {isAddingNew ? "Add Volunteer Assignment" : "Edit Volunteer Assignment"}
+          {isAddingNew ? "Add Person Assignment" : "Edit Person Assignment"}
         </DialogTitle>
         <DialogContent>
           {!isAddingNew && (
@@ -448,14 +498,14 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
           )}
           <FormControl fullWidth margin="normal">
             <InputLabel id="replacement-volunteer-label">
-              {isAddingNew ? "Assign volunteer" : "Replace with"}
+              {isAddingNew ? "Assign Person" : "Replace with"}
             </InputLabel>
             <Select
               labelId="replacement-volunteer-label"
               id="replacement-volunteer"
               value={selectedReplacement}
               onChange={(e) => setSelectedReplacement(e.target.value)}
-              label={isAddingNew ? "Assign volunteer" : "Replace with"}
+              label={isAddingNew ? "Assign person" : "Replace with"}
             >
               {editingMinistryId && getEligibleVolunteersForMinistry(editingMinistryId).map((volunteer) => (
                 <MenuItem key={volunteer.id} value={volunteer.id}>
@@ -465,7 +515,7 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
             </Select>
           </FormControl>
           <Typography variant="caption" color="text.secondary" style={{ marginTop: '8px', display: 'block' }}>
-            Only volunteers who serve in this ministry can be selected.
+            Only people who serve in this role can be selected.
           </Typography>
         </DialogContent>
         <DialogActions>
@@ -479,6 +529,15 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Snackbar for share URL copied notification */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setSnackbarOpen(false)}
+        message="Share URL copied to clipboard!"
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      />
     </div>
   );
 }

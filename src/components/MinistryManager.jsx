@@ -35,12 +35,12 @@ function MinistryManager({ ministries, onAddMinistry, onDeleteMinistry }) {
 
   return (
     <div className="ministry-manager card">
-      <h3>Manage Ministries</h3>
+      <h3>Manage Roles</h3>
       <Grid container spacing={2} className="add-ministry-form" alignItems="center">
         <Grid item xs={12} sm={6}>
           <TextField
             fullWidth
-            label="New Ministry Name"
+            label="New Role Name"
             variant="outlined"
             value={newMinistryName}
             onChange={(e) => setNewMinistryName(e.target.value)}
@@ -50,7 +50,7 @@ function MinistryManager({ ministries, onAddMinistry, onDeleteMinistry }) {
           <TextField
             fullWidth
             type="number"
-            label="Min. Volunteers"
+            label="Min. People"
             variant="outlined"
             value={minVolunteers}
             onChange={(e) => setMinVolunteers(e.target.value)}
@@ -64,14 +64,14 @@ function MinistryManager({ ministries, onAddMinistry, onDeleteMinistry }) {
             onClick={handleAdd}
             fullWidth
           >
-            Add Ministry
+            Add Role
           </Button>
         </Grid>
       </Grid>
       
-      <Typography variant="h6" sx={{ mt: 2 }}>Existing Ministries:</Typography>
+      <Typography variant="h6" sx={{ mt: 2 }}>Existing Roles:</Typography>
       {ministries.length === 0 ? (
-        <Typography variant="body1">No ministries defined yet.</Typography>
+        <Typography variant="body1">No roles defined yet.</Typography>
       ) : (
         <List>
           {ministries.map(m => (

@@ -58,6 +58,50 @@ function App() {
   useEffect(() => localStorage.setItem('endMonth', endMonth.toString()), [endMonth]);
   useEffect(() => localStorage.setItem('ministries', JSON.stringify(ministries)), [ministries]); // NEW
 
+  // Load shared roster data from URL if present
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sharedData = urlParams.get('data');
+    
+    if (sharedData) {
+      try {
+        // Decode the base64 data and parse the JSON
+        const decodedData = JSON.parse(atob(decodeURIComponent(sharedData)));
+        
+        // Set the roster and related data
+        if (decodedData.roster) {
+          // Convert date strings back to Date objects
+          const processedRoster = decodedData.roster.map(entry => ({
+            ...entry,
+            date: new Date(entry.date)
+          }));
+          setRoster(processedRoster);
+        }
+        
+        if (decodedData.volunteers) {
+          setVolunteers(decodedData.volunteers);
+        }
+        
+        if (decodedData.ministries) {
+          setMinistries(decodedData.ministries);
+        }
+        
+        // Set period info
+        if (decodedData.startYear) setStartYear(decodedData.startYear);
+        if (decodedData.startMonth) setStartMonth(decodedData.startMonth);
+        if (decodedData.endYear) setEndYear(decodedData.endYear);
+        if (decodedData.endMonth) setEndMonth(decodedData.endMonth);
+        
+        // Clear the URL parameter after loading the data to avoid reloading on refresh
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+      } catch (error) {
+        console.error('Error loading shared roster data:', error);
+        alert('Failed to load shared roster data from URL');
+      }
+    }
+  }, []); // Run only once on component mount
+
   // Ministry Management Handlers
   const handleAddMinistry = (newMinistry) => {
     if (ministries.find(m => m.name.toLowerCase() === newMinistry.name.toLowerCase())) {

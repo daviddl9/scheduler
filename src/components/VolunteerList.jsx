@@ -86,7 +86,7 @@ function VolunteerList({ volunteers, onEdit, onDelete, ministries }) {
                     </Box>
                     <Box mt={1}>
                       <Typography component="span" variant="body2">
-                        Serves In: {getMinistryNames(volunteer.ministryIds)}
+                        Role(s): {getMinistryNames(volunteer.ministryIds)}
                       </Typography>
                     </Box>
                   </>
