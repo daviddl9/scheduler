@@ -154,49 +154,67 @@ function VolunteerForm({ onSubmit, existingVolunteer, ministries }) {
             Can Take on the following Roles:
           </Typography>
           {ministries.length === 0 ? (
-            <Typography variant="body2" color="textSecondary">
-              No roles defined yet. Please add roles first.
-            </Typography>
+            <>
+              <Typography variant="body2" color="textSecondary" gutterBottom>
+                No roles defined yet. Please add roles first.
+              </Typography>
+              <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
+                <Button 
+                  type="submit" 
+                  variant="contained" 
+                  color="primary"
+                >
+                  {existingVolunteer ? 'Save Changes' : 'Add Person'}
+                </Button>
+                {existingVolunteer && (
+                  <Button 
+                    type="button" 
+                    variant="outlined" 
+                    onClick={() => onSubmit(null, true)}
+                  >
+                    Cancel Edit
+                  </Button>
+                )}
+              </Box>
+            </>
           ) : (
-            <FormGroup row>
-              {ministries.map(ministry => (
-                <FormControlLabel
-                  key={ministry.id}
-                  control={
-                    <Checkbox
-                      id={`ministry-${ministry.id}`}
-                      value={ministry.id}
-                      checked={formData.ministryIds.includes(ministry.id)}
-                      onChange={handleMinistryChange}
-                    />
-                  }
-                  label={ministry.name}
-                />
-              ))}
-            </FormGroup>
+            <>
+              <FormGroup row>
+                {ministries.map(ministry => (
+                  <FormControlLabel
+                    key={ministry.id}
+                    control={
+                      <Checkbox
+                        id={`ministry-${ministry.id}`}
+                        value={ministry.id}
+                        checked={formData.ministryIds.includes(ministry.id)}
+                        onChange={handleMinistryChange}
+                      />
+                    }
+                    label={ministry.name}
+                  />
+                ))}
+              </FormGroup>
+              <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
+                <Button 
+                  type="submit" 
+                  variant="contained" 
+                  color="primary"
+                >
+                  {existingVolunteer ? 'Save Changes' : 'Add Person'}
+                </Button>
+                {existingVolunteer && (
+                  <Button 
+                    type="button" 
+                    variant="outlined" 
+                    onClick={() => onSubmit(null, true)}
+                  >
+                    Cancel Edit
+                  </Button>
+                )}
+              </Box>
+            </>
           )}
-        </Grid>
-
-        {/* Submit and Cancel Buttons */}
-        <Grid item xs={12}>
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <Button 
-              type="submit" 
-              variant="contained" 
-              color="primary"
-            >
-              {existingVolunteer ? 'Save Changes' : 'Add Person'}
-            </Button>
-            {existingVolunteer && (
-              <Button 
-                type="button" 
-                variant="outlined" 
-                onClick={() => onSubmit(null, true)}
-              >
-                Cancel Edit
-              </Button>
-            )}
-          </Box>
         </Grid>
       </Grid>
     </Paper>

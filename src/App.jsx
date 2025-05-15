@@ -10,6 +10,7 @@ import {
   FormGroup, 
   FormControlLabel, 
   TextField,
+  Typography,
   FormHelperText,
   Button
 } from '@mui/material';
@@ -350,28 +351,28 @@ function App() {
                     </Select>
                 </FormControl>
                 <div className="occurrence-selection">
-                    <FormControl component="fieldset" margin="normal">
-                        <FormHelperText>Occurrences in Month</FormHelperText>
-                        <FormGroup>
-                            {OCCURRENCE_OPTIONS.map(opt => (
-                                <FormControlLabel
-                                    key={opt}
-                                    control={
-                                        <Checkbox
-                                            id={`occurrence-${opt}`}
-                                            value={opt}
-                                            checked={scheduleRule.occurrences.includes(opt)}
-                                            onChange={handleOccurrenceChange}
-                                            disabled={(opt !== 'every' && scheduleRule.occurrences.includes('every')) || 
-                                                    (opt === 'every' && scheduleRule.occurrences.some(o => o !== 'every'))}
-                                        />
-                                    }
-                                    label={opt.charAt(0).toUpperCase() + opt.slice(1)}
-                                />
-                            ))}
-                        </FormGroup>
-                        <FormHelperText>Select 'every' OR one or more specific occurrences.</FormHelperText>
-                    </FormControl>
+                    <Typography variant="subtitle1" gutterBottom>
+                        Occurrences in Month:
+                    </Typography>
+                    <FormGroup row>
+                        {OCCURRENCE_OPTIONS.map(opt => (
+                            <FormControlLabel
+                                key={opt}
+                                control={
+                                    <Checkbox
+                                        id={`occurrence-${opt}`}
+                                        value={opt}
+                                        checked={scheduleRule.occurrences.includes(opt)}
+                                        onChange={handleOccurrenceChange}
+                                        disabled={(opt !== 'every' && scheduleRule.occurrences.includes('every')) || 
+                                                (opt === 'every' && scheduleRule.occurrences.some(o => o !== 'every'))}
+                                    />
+                                }
+                                label={opt.charAt(0).toUpperCase() + opt.slice(1)}
+                            />
+                        ))}
+                    </FormGroup>
+                    <FormHelperText>Select 'every' OR one or more specific occurrences.</FormHelperText>
                 </div>
             </div>
 
