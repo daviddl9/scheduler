@@ -21,11 +21,11 @@ function MinistryManager({ ministries, onAddMinistry, onDeleteMinistry }) {
 
   const handleAdd = () => {
     if (!newMinistryName.trim()) {
-      alert('Please enter a ministry name.');
+      alert('Please enter a role name.');
       return;
     }
     if (minVolunteers < 1) {
-      alert('Minimum volunteers must be at least 1.');
+      alert('Minimum people required must be at least 1.');
       return;
     }
     onAddMinistry({ id: `m_${nanoid()}`, name: newMinistryName.trim(), minVolunteers: parseInt(minVolunteers, 10) });
@@ -78,7 +78,7 @@ function MinistryManager({ ministries, onAddMinistry, onDeleteMinistry }) {
             <ListItem key={m.id} divider>
               <ListItemText 
                 primary={m.name} 
-                secondary={`Minimum Volunteers: ${m.minVolunteers}`} 
+                secondary={`Minimum People: ${m.minVolunteers}`} 
               />
               <ListItemSecondaryAction>
                 <IconButton 

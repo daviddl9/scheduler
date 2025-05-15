@@ -31,7 +31,7 @@ function RoleManager({ roles, onAddRole, onDeleteRole }) {
       return;
     }
     if (minVolunteers < 1) {
-      alert('Minimum volunteers must be at least 1.');
+      alert('Minimum people must be at least 1.');
       return;
     }
     onAddRole({ id: `r_${nanoid()}`, name: newRoleName.trim(), minVolunteers: parseInt(minVolunteers, 10) });

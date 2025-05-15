@@ -26,6 +26,11 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
   const [draggedVolunteer, setDraggedVolunteer] = useState(null);
   const [draggedMinistryId, setDraggedMinistryId] = useState(null);
   const [draggedDateKey, setDraggedDateKey] = useState(null);
+
+  // Add state for ministry box drag and drop
+  const [draggedMinistryBox, setDraggedMinistryBox] = useState(null);
+  const [draggedMinistryBoxDateKey, setDraggedMinistryBoxDateKey] = useState(null);
+  const [isDraggingMinistryBox, setIsDraggingMinistryBox] = useState(false);
   
   // Add state for editing volunteers
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -87,7 +92,24 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
     e.dataTransfer.effectAllowed = 'move';
   };
 
-  // Handle drag over
+  // Handle ministry box drag start
+  const handleMinistryBoxDragStart = (e, ministryId, dateKey) => {
+    setDraggedMinistryBox(ministryId);
+    setDraggedMinistryBoxDateKey(dateKey);
+    setIsDraggingMinistryBox(true);
+    
+    // Set data for drag operation
+    e.dataTransfer.setData('text/plain', JSON.stringify({
+      ministryId,
+      dateKey,
+      isMinistryBox: true
+    }));
+    
+    // Set drag image and effects
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  // Handle drag over for both volunteers and ministry boxes
   const handleDragOver = (e) => {
     // Prevent default to allow drop
     e.preventDefault();
@@ -151,6 +173,63 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
     setDraggedVolunteer(null);
     setDraggedMinistryId(null);
     setDraggedDateKey(null);
+  };
+
+  // Handle ministry box drop to swap all volunteers in a ministry
+  const handleMinistryBoxDrop = (e, targetMinistryId, targetDateKey) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Only process if we're dragging a ministry box
+    if (!isDraggingMinistryBox) return;
+    
+    // Ensure we're not dropping onto the same box
+    if (draggedMinistryBoxDateKey === targetDateKey && draggedMinistryBox === targetMinistryId) {
+      return;
+    }
+    
+    // Ensure we're swapping the same ministry across different dates
+    if (draggedMinistryBox !== targetMinistryId) {
+      alert("You can only swap the same role across different dates.");
+      return;
+    }
+
+    // Find source and target roster entries
+    const sourceDate = roster.findIndex(entry => {
+      const entryDateKey = `${entry.date.getFullYear()}-${entry.date.getMonth()}-${entry.date.getDate()}`;
+      return entryDateKey === draggedMinistryBoxDateKey;
+    });
+
+    const targetDate = roster.findIndex(entry => {
+      const entryDateKey = `${entry.date.getFullYear()}-${entry.date.getMonth()}-${entry.date.getDate()}`;
+      return entryDateKey === targetDateKey;
+    });
+
+    if (sourceDate !== -1 && targetDate !== -1) {
+      // Create a deep copy of the roster
+      const updatedRoster = JSON.parse(JSON.stringify(roster));
+      
+      // Convert date strings back to Date objects
+      updatedRoster.forEach(entry => {
+        entry.date = new Date(entry.date);
+      });
+      
+      // Get the source and target ministry assignments
+      const sourceAssignments = [...(updatedRoster[sourceDate].assignmentsByMinistry[draggedMinistryBox] || [])];
+      const targetAssignments = [...(updatedRoster[targetDate].assignmentsByMinistry[targetMinistryId] || [])];
+      
+      // Swap the entire arrays of volunteers
+      updatedRoster[sourceDate].assignmentsByMinistry[draggedMinistryBox] = targetAssignments;
+      updatedRoster[targetDate].assignmentsByMinistry[targetMinistryId] = sourceAssignments;
+      
+      // Update the roster state
+      setRoster(updatedRoster);
+    }
+
+    // Clear drag state
+    setDraggedMinistryBox(null);
+    setDraggedMinistryBoxDateKey(null);
+    setIsDraggingMinistryBox(false);
   };
 
   // Handle opening the edit dialog
@@ -412,6 +491,49 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
       </li>
     );
   };
+  
+  // Render ministry box with draggable functionality
+  const renderMinistryBox = (ministry, assignedVolunteers, needed, isShort, dateKey) => {
+    const isDraggingBox = draggedMinistryBox === ministry.id && draggedMinistryBoxDateKey === dateKey;
+    
+    return (
+      <div 
+        key={ministry.id} 
+        className="ministry-assignment-item"
+        draggable
+        onDragStart={(e) => handleMinistryBoxDragStart(e, ministry.id, dateKey)}
+        onDragOver={handleDragOver}
+        onDrop={(e) => handleMinistryBoxDrop(e, ministry.id, dateKey)}
+        style={{ 
+          opacity: isDraggingBox ? 0.5 : 1,
+          cursor: 'move',
+          border: isDraggingBox ? '2px dashed #aaa' : '1px solid #e0e0e0',
+          borderRadius: '4px',
+          padding: '8px',
+          transition: 'all 0.2s ease',
+          backgroundColor: isDraggingBox ? '#f8f8f8' : '#f9f9f9',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+        }}
+      >
+        <h5>
+          {ministry.name} ({assignedVolunteers.length}/{needed})
+          {isShort && <span style={{color: 'orange', marginLeft: '5px'}}>(Short!)</span>}
+        </h5>
+        {assignedVolunteers.length > 0 ? (
+          <ul>
+            {assignedVolunteers.map(volId => renderVolunteerItem(volId, ministry.id, dateKey))}
+          </ul>
+        ) : (
+          <div 
+            className="empty-volunteer-slot"
+            onClick={() => handleAddVolunteerClick(ministry.id, dateKey)}
+          >
+            <p><small>Nobody assigned. Click to add.</small></p>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="roster-display card">
@@ -439,7 +561,7 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
           </Button>
         </div>
       </div>
-      <p><small>Drag and drop a person's name to swap positions between the same roles on different dates, or click on a person to edit directly.</small></p>
+      <p><small>Drag and drop a person's name to swap positions between the same roles on different dates, or drag an entire ministry box to swap all people assigned to that ministry between dates. Click on a person to edit directly.</small></p>
       {sortedYearMonthKeys.map(ymKey => {
         const group = groupedByYearMonth[ymKey];
         return (
@@ -456,25 +578,7 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
                       const assignedToThisMinistry = entry.assignmentsByMinistry[ministry.id] || [];
                       const needed = ministry.minVolunteers;
                       const isShort = assignedToThisMinistry.length < needed;
-                      return (
-                        <div key={ministry.id} className="ministry-assignment-item">
-                          <h5>{ministry.name} ({assignedToThisMinistry.length}/{needed})
-                            {isShort && <span style={{color: 'orange', marginLeft: '5px'}}>(Short!)</span>}
-                          </h5>
-                          {assignedToThisMinistry.length > 0 ? (
-                            <ul>
-                              {assignedToThisMinistry.map(volId => renderVolunteerItem(volId, ministry.id, dateKey))}
-                            </ul>
-                          ) : (
-                            <div 
-                              className="empty-volunteer-slot"
-                              onClick={() => handleAddVolunteerClick(ministry.id, dateKey)}
-                            >
-                              <p><small>Nobody assigned. Click to add.</small></p>
-                            </div>
-                          )}
-                        </div>
-                      );
+                      return renderMinistryBox(ministry, assignedToThisMinistry, needed, isShort, dateKey);
                     })}
                   </div>
                 </div>
