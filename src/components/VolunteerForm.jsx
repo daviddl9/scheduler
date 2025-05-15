@@ -151,11 +151,11 @@ function VolunteerForm({ onSubmit, existingVolunteer, ministries }) {
         {/* Ministry Selection */}
         <Grid item xs={12}>
           <Typography variant="subtitle1" gutterBottom>
-            Can Serve In Ministries:
+            Can Take on the following Roles:
           </Typography>
           {ministries.length === 0 ? (
             <Typography variant="body2" color="textSecondary">
-              No ministries defined yet. Please add ministries first.
+              No roles defined yet. Please add roles first.
             </Typography>
           ) : (
             <FormGroup row>

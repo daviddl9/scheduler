@@ -39,10 +39,10 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   if (ministries.length === 0) {
-    return <p className="card">Please define ministries first to see the roster display.</p>;
+    return <p className="card">Please define roles first to see the roster display.</p>;
   }
   if (!roster.length) {
-    return <p className="card">No roster generated yet. Configure period/rule, add volunteers, and click "Generate Roster".</p>;
+    return <p className="card">No roster generated yet. Configure period/rule, add people, and click "Generate Roster".</p>;
   }
 
   const getVolunteerName = (id) => {
@@ -105,7 +105,7 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
     
     // Ensure we're swapping within the same ministry
     if (draggedMinistryId !== targetMinistryId) {
-      alert("Volunteers can only be swapped for the same ministry role.");
+      alert("People can only be swapped for the same ministry role.");
       return;
     }
 
