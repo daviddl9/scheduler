@@ -9,11 +9,11 @@ export const DAYS_OF_WEEK = [
   'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
 ];
 
-const getDaysInMonth = (year, month, dayOfWeek) => { /* ... (same as before) ... */
+const getDaysInMonth = (year, month, dayOfWeek) => {
   const dates = [];
   const date = new Date(year, month, 1);
   while (date.getMonth() === month) {
-    if (date.getDay() === dayOfWeek) {
+    if (date.getDay() === parseInt(dayOfWeek)) {
       dates.push(new Date(date.getTime()));
     }
     date.setDate(date.getDate() + 1);
@@ -22,10 +22,13 @@ const getDaysInMonth = (year, month, dayOfWeek) => { /* ... (same as before) ...
 };
 
 export const getScheduledDatesForPeriod = (startYear, startMonthIndex, endYear, endMonthIndex, rule) => {
-  const { dayOfWeek, occurrences } = rule;
+  // Extract days of week and occurrences from rule, with fallbacks for backward compatibility
+  const daysOfWeek = rule.daysOfWeek || (rule.dayOfWeek ? [rule.dayOfWeek] : ['0']);
+  const { occurrences } = rule;
   const scheduledDates = [];
 
   if (!occurrences || occurrences.length === 0) return [];
+  if (!daysOfWeek || daysOfWeek.length === 0) return [];
   if (endYear < startYear || (endYear === startYear && endMonthIndex < startMonthIndex)) return []; // Basic validation
 
   for (let currentYear = startYear; currentYear <= endYear; currentYear++) {
@@ -33,14 +36,16 @@ export const getScheduledDatesForPeriod = (startYear, startMonthIndex, endYear, 
     const monthEndLoop = (currentYear === endYear) ? endMonthIndex : 11;
 
     for (let currentMonth = monthStartLoop; currentMonth <= monthEndLoop; currentMonth++) {
-      const daysInCurrentMonthMatchingDayOfWeek = getDaysInMonth(currentYear, currentMonth, parseInt(dayOfWeek));
+      // Process each selected day of the week
+      for (const dayOfWeek of daysOfWeek) {
+        const daysInCurrentMonthMatchingDayOfWeek = getDaysInMonth(currentYear, currentMonth, dayOfWeek);
 
-      if (daysInCurrentMonthMatchingDayOfWeek.length === 0) continue;
+        if (daysInCurrentMonthMatchingDayOfWeek.length === 0) continue;
 
-      if (occurrences.includes('every')) {
-        scheduledDates.push(...daysInCurrentMonthMatchingDayOfWeek);
-      } else {
-        const specificDatesThisMonth = [];
+        if (occurrences.includes('every')) {
+          scheduledDates.push(...daysInCurrentMonthMatchingDayOfWeek);
+        } else {
+          const specificDatesThisMonth = [];
         occurrences.forEach(occurrence => {
           switch (occurrence) {
             case '1st': if (daysInCurrentMonthMatchingDayOfWeek[0]) specificDatesThisMonth.push(daysInCurrentMonthMatchingDayOfWeek[0]); break;
@@ -62,6 +67,7 @@ export const getScheduledDatesForPeriod = (startYear, startMonthIndex, endYear, 
             scheduledDates.push(d);
           }
         });
+      }
       }
     }
   }

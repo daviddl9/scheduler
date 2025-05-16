@@ -44,7 +44,31 @@ function App() {
     return savedEndYear ? parseInt(savedEndYear, 10) : currentSystemYear;
   });
   const [endMonth, setEndMonth] = useState(() => parseInt(localStorage.getItem('endMonth') || '11', 10));
-  const [scheduleRule, setScheduleRule] = useState(() => JSON.parse(localStorage.getItem('scheduleRule') || JSON.stringify({ dayOfWeek: '0', occurrences: ['every'] })));
+  const [scheduleRule, setScheduleRule] = useState(() => {
+    const savedRule = localStorage.getItem('scheduleRule');
+    if (savedRule) {
+      const parsedRule = JSON.parse(savedRule);
+      // Convert old format to new format if needed
+      if (parsedRule.dayOfWeek && !parsedRule.daysOfWeek) {
+        // Migrate single dayOfWeek to array of daysOfWeek
+        const migratedRule = {
+          ...parsedRule,
+          daysOfWeek: [parsedRule.dayOfWeek]
+        };
+        // Remove the old property
+        delete migratedRule.dayOfWeek;
+        return migratedRule;
+      }
+      
+      // Ensure we don't keep both properties if somehow both exist
+      if (parsedRule.dayOfWeek && parsedRule.daysOfWeek) {
+        delete parsedRule.dayOfWeek;
+      }
+      
+      return parsedRule;
+    }
+    return { daysOfWeek: ['0'], occurrences: ['every'] };
+  });
 
   // NEW STATE for ministries
   const [ministries, setMinistries] = useState(() => JSON.parse(localStorage.getItem('ministries') || '[]'));
@@ -132,6 +156,29 @@ function App() {
     setScheduleRule(prev => ({ ...prev, [name]: value }));
   };
   
+  const handleDayOfWeekChange = (e) => {
+    const { value, checked } = e.target;
+    setScheduleRule(prev => {
+      let updatedDaysOfWeek = [...(prev.daysOfWeek || [])];
+      
+      if (checked) {
+        if (!updatedDaysOfWeek.includes(value)) {
+          updatedDaysOfWeek.push(value);
+        }
+      } else {
+        updatedDaysOfWeek = updatedDaysOfWeek.filter(day => day !== value);
+        // Prevent having no days selected by adding a default if list becomes empty
+        if (updatedDaysOfWeek.length === 0 && value === prev.daysOfWeek[0]) {
+          // If user is unchecking the only selected day, we should keep it selected
+          updatedDaysOfWeek = [value]; 
+          return prev; // No change
+        }
+      }
+      
+      return { ...prev, daysOfWeek: updatedDaysOfWeek };
+    });
+  };
+  
   const handleOccurrenceChange = (e) => {
     const { value, checked } = e.target;
     setScheduleRule(prev => {
@@ -176,11 +223,15 @@ function App() {
   // --- HEAVILY MODIFIED generateRoster FUNCTION ---
   const generateRoster = () => {
     // Validations
-    if (endYear < startYear || (endYear === startYear && endMonth < startMonth)) { /* ... */ }
+    if (endYear < startYear || (endYear === startYear && endMonth < startMonth)) {
+      alert("End period must be after start period.");
+      return;
+    }
     if (volunteers.length === 0) { alert("Add volunteers."); return; }
     if (ministries.length === 0) { alert("Define ministries first."); return; }
-    if (scheduleRule.occurrences.length === 0) { /* ... */ }
-    if (scheduleRule.occurrences.includes('every') && scheduleRule.occurrences.length > 1) { /* ... */ }
+    if (scheduleRule.occurrences.length === 0) { alert("Select at least one occurrence."); return; }
+    if (scheduleRule.occurrences.includes('every') && scheduleRule.occurrences.length > 1) { alert("Cannot select 'every' with other occurrences."); return; }
+    if (!scheduleRule.daysOfWeek || scheduleRule.daysOfWeek.length === 0) { alert("Select at least one day of the week."); return; }
 
     const scheduledDates = getScheduledDatesForPeriod(startYear, startMonth, endYear, endMonth, scheduleRule);
     if (scheduledDates.length === 0) { /* ... */ }
@@ -335,21 +386,26 @@ function App() {
     
             <div className="schedule-rule-config card">
                 <h3>Configure Schedule Rule</h3>
-                <FormControl fullWidth margin="normal">
-                    <InputLabel id="dayOfWeek-label">Day of the Week</InputLabel>
-                    <Select
-                        labelId="dayOfWeek-label"
-                        id="dayOfWeek"
-                        name="dayOfWeek"
-                        value={scheduleRule.dayOfWeek}
-                        onChange={handleScheduleRuleChange}
-                        label="Day of the Week"
-                    >
-                        {DAYS_OF_WEEK.map((day, index) => (
-                            <MenuItem key={index} value={index.toString()}>{day}</MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
+                <Typography variant="subtitle1" gutterBottom>
+                    Days of the Week:
+                </Typography>
+                <FormGroup row className="days-checkbox-group">
+                    {DAYS_OF_WEEK.map((day, index) => (
+                        <FormControlLabel
+                            key={`day-${index}`}
+                            control={
+                                <Checkbox
+                                    id={`day-${index}`}
+                                    value={index.toString()}
+                                    checked={scheduleRule.daysOfWeek?.includes(index.toString())}
+                                    onChange={handleDayOfWeekChange}
+                                />
+                            }
+                            label={day}
+                        />
+                    ))}
+                </FormGroup>
+                <FormHelperText>Select one or more days of the week for scheduling.</FormHelperText>
                 <div className="occurrence-selection">
                     <Typography variant="subtitle1" gutterBottom>
                         Occurrences in Month:

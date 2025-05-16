@@ -102,6 +102,7 @@ header {
   max-width: 300px;
 }
 
+.days-checkbox-group,
 .occurrences-checkbox-group {
   display: flex;
   flex-wrap: wrap;
@@ -109,12 +110,14 @@ header {
   margin-top: 0.5em;
 }
 
+.days-checkbox-group div,
 .occurrences-checkbox-group div {
   display: flex;
   align-items: center;
   margin-bottom: 0.5em;
 }
 
+.days-checkbox-group input[type="checkbox"],
 .occurrences-checkbox-group input[type="checkbox"] {
   margin-right: 0.5em;
 }
