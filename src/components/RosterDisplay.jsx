@@ -561,7 +561,7 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
           </Button>
         </div>
       </div>
-      <p><small>Drag and drop a person's name to swap positions between the same roles on different dates, or drag an entire ministry box to swap all people assigned to that ministry between dates. Click on a person to edit directly.</small></p>
+      <p><small>Drag and drop a person's name to swap positions between the same roles on different dates, or drag an entire box to swap all people assigned to that role between dates. Click on a person to edit directly.</small></p>
       {sortedYearMonthKeys.map(ymKey => {
         const group = groupedByYearMonth[ymKey];
         return (
