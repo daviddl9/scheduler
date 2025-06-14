@@ -14,7 +14,8 @@ import {
   Typography,
   Snackbar,
   IconButton,
-  Tooltip
+  Tooltip,
+  Stack
 } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import * as XLSX from 'xlsx';
@@ -539,7 +540,12 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
     <div className="roster-display card">
       <div className="roster-header">
         <h3>{rosterPeriodTitle}</h3>
-        <div style={{ display: 'flex', gap: '10px', marginLeft: 'auto' }}>
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={'10px'}
+          sx={{ marginLeft: 'auto' }}
+          alignItems={{ xs: 'stretch', sm: 'center' }}
+        >
           <Tooltip title="Copy shareable link to clipboard">
             <Button 
               variant="outlined" 
@@ -559,7 +565,7 @@ function RosterDisplay({ roster, volunteers, ministries, startYear, startMonth, 
           >
             Export to Excel
           </Button>
-        </div>
+        </Stack>
       </div>
       <p><small>Drag and drop a person's name to swap positions between the same roles on different dates, or drag an entire box to swap all people assigned to that role between dates. Click on a person to edit directly.</small></p>
       {sortedYearMonthKeys.map(ymKey => {
